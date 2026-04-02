@@ -29,43 +29,43 @@ st.markdown("""
     .block-container { max-width: 1100px; padding-top: 2rem; }
 
     /* Title area */
-    div[data-testid="stMarkdownContainer"] h1 { text-align: center; }
+    div[data-testid="stMarkdownContainer"] h1 { text-align: center; color: #ffffff; }
     div[data-testid="stMarkdownContainer"] p.subtitle {
-        text-align: center; color: #666; margin-top: -12px; font-size: 1.05rem;
+        text-align: center; color: #aab4c0; margin-top: -12px; font-size: 1.05rem;
     }
 
-    /* Return value colouring */
-    .ret-pos { color: #00864e; font-weight: 600; }
-    .ret-neg { color: #c62828; font-weight: 600; }
-    .ret-zero { color: #333; }
+    /* Return value colouring — brighter for dark bg */
+    .ret-pos { color: #4cdf8b; font-weight: 600; }
+    .ret-neg { color: #ff6b6b; font-weight: 600; }
+    .ret-zero { color: #ccc; }
 
-    /* Section headers */
+    /* Section headers — white text */
     .section-hdr {
-        font-size: 1.35rem; font-weight: 700; color: #1b263b;
-        border-bottom: 2px solid #415a77; padding-bottom: 4px;
+        font-size: 1.35rem; font-weight: 700; color: #ffffff;
+        border-bottom: 2px solid #5a7a9a; padding-bottom: 4px;
         margin-top: 2.5rem; margin-bottom: 0.8rem;
     }
     .sub-hdr {
-        font-size: 1.1rem; font-weight: 600; color: #415a77;
+        font-size: 1.1rem; font-weight: 600; color: #a0b8d0;
         margin-top: 1.2rem; margin-bottom: 0.5rem;
     }
 
-    /* Metric cards */
+    /* Metric cards — dark surface */
     .metric-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
     .metric-card {
-        background: #f4f6f8; border-radius: 8px; padding: 14px 18px;
-        flex: 1; min-width: 200px; border-left: 4px solid #415a77;
+        background: rgba(255,255,255,0.06); border-radius: 8px; padding: 14px 18px;
+        flex: 1; min-width: 200px; border-left: 4px solid #5a7a9a;
     }
-    .metric-card.bullish  { border-left-color: #00864e; }
-    .metric-card.bearish  { border-left-color: #c62828; }
-    .metric-card.neutral  { border-left-color: #f57f17; }
-    .metric-label { font-size: 0.78rem; color: #777; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-card.bullish  { border-left-color: #4cdf8b; }
+    .metric-card.bearish  { border-left-color: #ff6b6b; }
+    .metric-card.neutral  { border-left-color: #f5bf42; }
+    .metric-label { font-size: 0.78rem; color: #8a96a6; text-transform: uppercase; letter-spacing: 0.5px; }
     .metric-value { font-size: 1.3rem; font-weight: 700; margin-top: 2px; }
 
     /* Disclaimer */
     .disclaimer {
-        font-size: 0.75rem; color: #999; text-align: center;
-        margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #eee;
+        font-size: 0.75rem; color: #6b7785; text-align: center;
+        margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -79,7 +79,7 @@ def _fmt(val, bold=False):
     """Return an HTML-styled return value string."""
     if val is None or (isinstance(val, float) and np.isnan(val)):
         return "—"
-    cls = "ret-pos" if val > 0 else "ret-neg" if val < 0 else "ret-zero"
+    cls = "ret-pos" if val > 0 else ("ret-neg" if val < 0 else "ret-zero")
     txt = f"{val:+.2f}%"
     if bold:
         return f'<span class="{cls}" style="font-weight:700">{txt}</span>'
@@ -92,9 +92,9 @@ def _styled_df(df, value_cols):
         if pd.isna(v):
             return ""
         if v > 0:
-            return "color: #00864e; font-weight: 600"
+            return "color: #4cdf8b; font-weight: 600"
         elif v < 0:
-            return "color: #c62828; font-weight: 600"
+            return "color: #ff6b6b; font-weight: 600"
         return ""
 
     fmt = {c: "{:+.2f}%" for c in value_cols if c in df.columns}
@@ -231,7 +231,7 @@ def display_report():
 
     # ── HEADER ──
     st.markdown(
-        f'<p style="text-align:center;color:#555;font-size:0.95rem;">'
+        f'<p style="text-align:center;color:#8a96a6;font-size:0.95rem;">'
         f'Report generated {generated.strftime("%B %d, %Y at %H:%M")} · '
         f'{len(returns_df)} indices across {returns_df["Country"].nunique()} countries</p>',
         unsafe_allow_html=True,
@@ -249,22 +249,22 @@ def display_report():
             a = v.mean()
             p = (v > 0).sum() / len(v) * 100
             if a < -2:
-                rg, rc, cls = "BROAD SELLOFF", "#c62828", "bearish"
+                rg, rc, cls = "BROAD SELLOFF", "#ff6b6b", "bearish"
             elif a < -0.5:
-                rg, rc, cls = "MILD BEARISH", "#e65100", "bearish"
+                rg, rc, cls = "MILD BEARISH", "#ff9a5c", "bearish"
             elif a < 0.5:
-                rg, rc, cls = "NEUTRAL / MIXED", "#f57f17", "neutral"
+                rg, rc, cls = "NEUTRAL / MIXED", "#f5bf42", "neutral"
             elif a < 2:
-                rg, rc, cls = "MILD BULLISH", "#2e7d32", "bullish"
+                rg, rc, cls = "MILD BULLISH", "#4cdf8b", "bullish"
             else:
-                rg, rc, cls = "STRONG RALLY", "#00864e", "bullish"
+                rg, rc, cls = "STRONG RALLY", "#4cdf8b", "bullish"
 
             st.markdown(
                 f'<div class="metric-row">'
                 f'<div class="metric-card {cls}">'
                 f'<div class="metric-label">5-Day Global Regime</div>'
                 f'<div class="metric-value" style="color:{rc}">{rg}</div>'
-                f'<div style="font-size:0.85rem;color:#555;margin-top:4px">'
+                f'<div style="font-size:0.85rem;color:#8a96a6;margin-top:4px">'
                 f'Avg: {a:+.2f}%  ·  {p:.0f}% positive</div></div>',
                 unsafe_allow_html=True,
             )
@@ -274,14 +274,14 @@ def display_report():
             vix_html = ""
             if not vix_row.empty:
                 vp = vix_row.iloc[0]["Last Price"]
-                vc = "#c62828" if vp > 20 else "#f57f17" if vp > 15 else "#00864e"
+                vc = "#ff6b6b" if vp > 20 else "#f5bf42" if vp > 15 else "#4cdf8b"
                 vix_cls = "bearish" if vp > 20 else "neutral" if vp > 15 else "bullish"
                 vlabel = "Elevated" if vp > 20 else "Moderate" if vp > 15 else "Low"
                 vix_html = (
                     f'<div class="metric-card {vix_cls}">'
                     f'<div class="metric-label">VIX (Volatility)</div>'
                     f'<div class="metric-value" style="color:{vc}">{vp:.2f}</div>'
-                    f'<div style="font-size:0.85rem;color:#555;margin-top:4px">{vlabel}</div></div>'
+                    f'<div style="font-size:0.85rem;color:#8a96a6;margin-top:4px">{vlabel}</div></div>'
                 )
             st.markdown(vix_html + "</div>", unsafe_allow_html=True)
 
