@@ -208,10 +208,15 @@ def compute_correlations(data, period_days):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _setup_ax(ax, fig):
-    fig.patch.set_facecolor('#fafbfc')
-    ax.set_facecolor('#fafbfc')
+    fig.patch.set_facecolor('#1e1e2e')
+    ax.set_facecolor('#1e1e2e')
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_color('#555')
+    ax.spines['left'].set_color('#555')
+    ax.tick_params(colors='#ccc')
+    ax.xaxis.label.set_color('#ccc')
+    ax.yaxis.label.set_color('#ccc')
 
 
 def chart_investment_returns(inv_ret, indices, max_days, title, path):
@@ -222,15 +227,15 @@ def chart_investment_returns(inv_ret, indices, max_days, title, path):
     for i, col in enumerate(avail):
         v = sub[col].dropna()
         ax.plot(v.index, v.values, label=col, color=COLORS[i%len(COLORS)], linewidth=1.8, alpha=0.9)
-    ax.axhline(0, color='#999', lw=0.8, ls='--', alpha=0.6)
+    ax.axhline(0, color='#666', lw=0.8, ls='--', alpha=0.6)
     ax.set_xlabel('Days Ago I Invested', fontsize=10, fontweight='bold')
     ax.set_ylabel('Return as of Today (%)', fontsize=10, fontweight='bold')
-    ax.set_title(title, fontsize=13, fontweight='bold', color='#1b263b', pad=12)
+    ax.set_title(title, fontsize=13, fontweight='bold', color='#ffffff', pad=12)
     ax.invert_xaxis()
     ax.yaxis.set_major_formatter(mticker.FormatStrFormatter('%.1f%%'))
-    ax.grid(True, alpha=0.3)
+    ax.grid(True, alpha=0.2, color='#555')
     ax.legend(loc='upper center', bbox_to_anchor=(0.5,-0.12), ncol=min(5,len(avail)),
-              fontsize=8, frameon=True, facecolor='white', edgecolor='#ccc')
+              fontsize=8, frameon=True, facecolor='#2a2a3e', edgecolor='#555', labelcolor='#ccc')
     plt.tight_layout()
     fig.savefig(path, dpi=150, bbox_inches='tight', facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -241,18 +246,18 @@ def chart_bars(returns_df, col, title, path):
     df = df[df['Index'] != 'VIX (Volatility)'].sort_values(col, ascending=True)
     fig, ax = plt.subplots(figsize=(10, max(4, len(df)*0.28)))
     _setup_ax(ax, fig)
-    bar_colors = ['#c62828' if v<0 else '#00864e' for v in df[col]]
+    bar_colors = ['#ff6b6b' if v<0 else '#4cdf8b' for v in df[col]]
     bars = ax.barh(range(len(df)), df[col], color=bar_colors, height=0.7, alpha=0.85)
     ax.set_yticks(range(len(df)))
-    ax.set_yticklabels([f"{r['Index']} ({r['Country']})" for _,r in df.iterrows()], fontsize=7)
+    ax.set_yticklabels([f"{r['Index']} ({r['Country']})" for _,r in df.iterrows()], fontsize=7, color='#ccc')
     ax.set_xlabel('Return (%)', fontsize=9, fontweight='bold')
-    ax.set_title(title, fontsize=12, fontweight='bold', color='#1b263b', pad=10)
-    ax.axvline(0, color='#333', lw=0.8)
-    ax.grid(True, axis='x', alpha=0.3)
+    ax.set_title(title, fontsize=12, fontweight='bold', color='#ffffff', pad=10)
+    ax.axvline(0, color='#666', lw=0.8)
+    ax.grid(True, axis='x', alpha=0.2, color='#555')
     for bar, val in zip(bars, df[col]):
         x = val + (0.15 if val>=0 else -0.15)
         ax.text(x, bar.get_y()+bar.get_height()/2, f'{val:+.2f}%',
-                va='center', ha='left' if val>=0 else 'right', fontsize=6.5, color='#333')
+                va='center', ha='left' if val>=0 else 'right', fontsize=6.5, color='#ccc')
     plt.tight_layout()
     fig.savefig(path, dpi=150, bbox_inches='tight', facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -273,12 +278,12 @@ def chart_regional(returns_df, path):
         bars = ax.bar(x+i*w, vals, w, label=reg, color=rc[reg], alpha=0.85)
         for bar, val in zip(bars, vals):
             ax.text(bar.get_x()+bar.get_width()/2, bar.get_height()+0.1,
-                    f'{val:.1f}%', ha='center', va='bottom', fontsize=7)
-    ax.set_xticks(x+w); ax.set_xticklabels(periods, fontsize=9)
+                    f'{val:.1f}%', ha='center', va='bottom', fontsize=7, color='#ccc')
+    ax.set_xticks(x+w); ax.set_xticklabels(periods, fontsize=9, color='#ccc')
     ax.set_ylabel('Avg Return (%)', fontsize=10, fontweight='bold')
-    ax.set_title('Regional Average Returns Comparison', fontsize=13, fontweight='bold', color='#1b263b', pad=12)
-    ax.axhline(0, color='#999', lw=0.8, ls='--')
-    ax.legend(fontsize=9); ax.grid(True, axis='y', alpha=0.3)
+    ax.set_title('Regional Average Returns Comparison', fontsize=13, fontweight='bold', color='#ffffff', pad=12)
+    ax.axhline(0, color='#666', lw=0.8, ls='--')
+    ax.legend(fontsize=9, facecolor='#2a2a3e', edgecolor='#555', labelcolor='#ccc'); ax.grid(True, axis='y', alpha=0.2, color='#555')
     plt.tight_layout()
     fig.savefig(path, dpi=150, bbox_inches='tight', facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -299,12 +304,12 @@ def chart_cumulative(data, indices, days, title, path):
         norm = (seg / float(seg.iloc[0])) * 100
         ax.plot(norm.index, norm.values, label=name, color=COLORS[plotted%len(COLORS)], lw=1.6, alpha=0.9)
         plotted += 1
-    ax.axhline(100, color='#999', lw=0.8, ls='--', alpha=0.6)
+    ax.axhline(100, color='#666', lw=0.8, ls='--', alpha=0.6)
     ax.set_ylabel('Indexed (Start=100)', fontsize=10, fontweight='bold')
-    ax.set_title(title, fontsize=13, fontweight='bold', color='#1b263b', pad=12)
-    ax.grid(True, alpha=0.3)
+    ax.set_title(title, fontsize=13, fontweight='bold', color='#ffffff', pad=12)
+    ax.grid(True, alpha=0.2, color='#555')
     ax.legend(loc='upper center', bbox_to_anchor=(0.5,-0.10), ncol=min(5,plotted),
-              fontsize=8, frameon=True, facecolor='white', edgecolor='#ccc')
+              fontsize=8, frameon=True, facecolor='#2a2a3e', edgecolor='#555', labelcolor='#ccc')
     plt.tight_layout()
     fig.savefig(path, dpi=150, bbox_inches='tight', facecolor=fig.get_facecolor())
     plt.close(fig)
@@ -320,20 +325,24 @@ def chart_corr_heatmap(corr, title, path, max_n=15):
         corr = corr.loc[keep, keep]
     n = len(corr)
     fig, ax = plt.subplots(figsize=(max(8, n*0.65), max(6, n*0.55)))
-    fig.patch.set_facecolor('#fafbfc')
-    cmap = LinearSegmentedColormap.from_list('rg', ['#c62828','#ffecb3','#00864e'])
+    fig.patch.set_facecolor('#1e1e2e')
+    ax.set_facecolor('#1e1e2e')
+    cmap = LinearSegmentedColormap.from_list('rg', ['#ff6b6b','#f5bf42','#4cdf8b'])
     im = ax.imshow(corr.values, cmap=cmap, vmin=-1, vmax=1, aspect='auto')
     ax.set_xticks(range(n)); ax.set_yticks(range(n))
     short = [c[:12] for c in corr.columns]
-    ax.set_xticklabels(short, rotation=45, ha='right', fontsize=7)
-    ax.set_yticklabels(short, fontsize=7)
+    ax.set_xticklabels(short, rotation=45, ha='right', fontsize=7, color='#ccc')
+    ax.set_yticklabels(short, fontsize=7, color='#ccc')
     for i in range(n):
         for j in range(n):
             v = corr.iloc[i,j]
             ax.text(j, i, f'{v:.2f}', ha='center', va='center',
-                    fontsize=6, color='white' if abs(v)>0.6 else 'black')
-    ax.set_title(title, fontsize=12, fontweight='bold', color='#1b263b', pad=12)
-    plt.colorbar(im, ax=ax, shrink=0.8, label='Correlation')
+                    fontsize=6, color='white' if abs(v)>0.6 else '#1e1e2e')
+    ax.set_title(title, fontsize=12, fontweight='bold', color='#ffffff', pad=12)
+    cbar = plt.colorbar(im, ax=ax, shrink=0.8, label='Correlation')
+    cbar.ax.yaxis.set_tick_params(color='#ccc')
+    cbar.ax.yaxis.label.set_color('#ccc')
+    plt.setp(plt.getp(cbar.ax, 'yticklabels'), color='#ccc')
     plt.tight_layout()
     fig.savefig(path, dpi=150, bbox_inches='tight', facecolor=fig.get_facecolor())
     plt.close(fig)
